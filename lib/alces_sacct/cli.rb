@@ -46,6 +46,18 @@ module AlcesSacct
           end
         end
 
+        def get_time(start, end_date)
+          start_time = start ? parse_date!('start', start) : EPOCH_START
+          end_time   = end_date ? parse_date!('end', end_date) : Y2K38_LIMIT
+          [start_time, end_time]
+        end
+
+        def parse_date!(label, val)
+          Date.iso8601(val)
+        rescue ArgumentError
+          raise "Invalid #{label} date format. Expected ISO8601 (YYYY-MM-DD)."
+        end
+
         private
 
         def process(**opts)
@@ -84,18 +96,6 @@ module AlcesSacct
         rescue StandardError
           ENV['USER']
         end
-      end
-
-      def get_time(start, end_date)
-        start_time = start ? parse_date!('start', start) : EPOCH_START
-        end_time   = end_date ? parse_date!('end', end_date) : Y2K38_LIMIT
-        [start_time, end_time]
-      end
-
-      def parse_date!(label, val)
-        Date.iso8601(val)
-      rescue ArgumentError
-        raise "Invalid #{label} date format. Expected ISO8601 (YYYY-MM-DD)."
       end
 
       register 'report', Report
