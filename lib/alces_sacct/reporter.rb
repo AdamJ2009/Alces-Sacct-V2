@@ -69,7 +69,7 @@ class SacctReporter
       next unless m
 
       [
-        m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu],
+        m[:user],m[:partition],m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu],
         m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]
       ]
     end
