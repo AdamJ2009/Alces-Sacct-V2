@@ -6,6 +6,7 @@ require 'date'
 require 'dry/cli'
 require 'etc'
 require_relative 'parser'
+require_relative 'reporter'
 require 'time'
 
 EPOCH_START = Date.new(1970, 1, 1)
@@ -51,15 +52,9 @@ module AlcesSacct
             inputs = clean_inputs(**opts)
             output = Parser.new.fetch(inputs)
             pp output.map(&:to_h)
+            reporter = SacctReporter.new(output)
             puts "\n=== Overall Metrics Summary ==="
             pp reporter.metrics
-
-            # 2. Grouped table rows (e.g., grouped by user or partition)
-            grouped_jobs = jobs.group_by(&:user) # or jobs.group_by(&:partition)
-            rows = reporter.build_rows(grouped_jobs)
-            
-            puts "\n=== Grouped Table Rows ==="
-            pp rows
         end
 
         private
