@@ -8,7 +8,6 @@ Gem::Specification.new do |spec|
   spec.authors = ['AdamJ2009']
   spec.email = ['adamdj2009@gmail.com']
 
-<<<<<<< HEAD
   spec.summary = 'CLI tool for parsing and reporting Slurm sacct job accounting data.'
   spec.description = 'AlcesSacct aggregates and formats Slurm sacct output into detailed user and partition reports.'
   spec.homepage = 'https://github.com/AdamJ2009/alces_sacct'
@@ -17,41 +16,18 @@ Gem::Specification.new do |spec|
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
 
-=======
-  spec.summary = "CLI tool for parsing and reporting Slurm sacct job accounting data."
-  spec.description = "AlcesSacct aggregates and formats Slurm sacct output into detailed user, partition, and job reports."
-  spec.homepage = "https://github.com/AdamJ2009/alces_sacct"
-  spec.required_ruby_version = ">= 3.2.0"
-
-  spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
-
->>>>>>> 5664da60215197f1b3a513e387b9458482f74b1b
   gemspec = File.basename(__FILE__)
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
       (f == gemspec) ||
         f.start_with?(*%w[Gemfile .gitignore .rubocop.yml spec/])
-<<<<<<< HEAD
       f.end_with?('.csv')
     end
   end
 
   spec.bindir = 'exe'
-=======
-        f.end_with?('.csv')
-    end
-  end
-
-  spec.bindir = "exe"
->>>>>>> 5664da60215197f1b3a513e387b9458482f74b1b
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-<<<<<<< HEAD
   spec.add_dependency 'dry-cli', '~> 1.0'
-=======
-  spec.add_dependency "dry-cli", "~> 1.0"
-  
->>>>>>> 5664da60215197f1b3a513e387b9458482f74b1b
 end
