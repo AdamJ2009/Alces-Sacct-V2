@@ -97,17 +97,17 @@ class SacctReporter
         ((state_jobs.size / count) * 100).round(2)
     end
 
-    # Compact inline format: "COMPLETED: 91.79%, FAILED: 8.21%"
-    outcomes_pct.map { |k, v| "#{k}: #{v}%" }.join(', ')
-    end
+    # Joins each outcome state on a new line
+    outcomes_pct.map { |k, v| "#{k}: #{v}%" }.join("\n")
+  end
 
-    def format_exit_summary
-    # Compact inline format: "0:0 (212), 0:9 (12)"
+  def format_exit_summary
+    # Joins each exit code on a new line
     @jobs.group_by(&:exit_code)
         .transform_values(&:size)
-        .map { |code, count| "#{code} (#{count})" }
-        .join(', ')
-    end
+        .map { |code, size| "#{code} (#{size})" }
+        .join("\n")
+  end
 
   def mean_and_med_metrics(count, cpus, mems)
     {
