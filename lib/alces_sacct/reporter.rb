@@ -69,7 +69,7 @@ class SacctReporter
       next unless m
 
       [
-        m[:user],m[:partition],m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu],
+        m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu],
         m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]
       ]
     end
@@ -94,18 +94,20 @@ class SacctReporter
   def format_outcomes(count)
     state_counts = @jobs.group_by(&:state)
     outcomes_pct = state_counts.transform_values do |state_jobs|
-      ((state_jobs.size / count) * 100).round(2)
+        ((state_jobs.size / count) * 100).round(2)
     end
 
-    outcomes_pct.map { |k, v| "#{k}: #{v}%" }.join("\n")
-  end
+    # Compact inline format: "COMPLETED: 91.79%, FAILED: 8.21%"
+    outcomes_pct.map { |k, v| "#{k}: #{v}%" }.join(', ')
+    end
 
-  def format_exit_summary
+    def format_exit_summary
+    # Compact inline format: "0:0 (212), 0:9 (12)"
     @jobs.group_by(&:exit_code)
-         .transform_values(&:size)
-         .map { |code, size| "Code #{code}: #{size}" }
-         .join("\n")
-  end
+        .transform_values(&:size)
+        .map { |code, count| "#{code} (#{count})" }
+        .join(', ')
+    end
 
   def mean_and_med_metrics(count, cpus, mems)
     {

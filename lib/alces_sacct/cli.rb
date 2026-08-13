@@ -8,6 +8,7 @@ require 'etc'
 require_relative 'parser'
 require_relative 'reporter'
 require 'time'
+require 'tty-table'
 
 EPOCH_START = Date.new(1970, 1, 1)
 Y2K38_LIMIT = Date.new(2038, 1, 19)
