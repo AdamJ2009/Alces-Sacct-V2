@@ -25,14 +25,26 @@ rescue ArgumentError
   raise "Invalid #{label} date format. Expected ISO8601 (YYYY-MM-DD)."
 end
 
-def tty_table(headers, rows, title)
+# Unified display and export function
+def render_and_export(headers, rows, title, csv_filename: nil)
   puts "\n#{title}"
   table = TTY::Table.new(headers, rows)
   puts table.render(:unicode, multiline: true) { |r| r.border.separator = :each_row }
+
+  if csv_filename && !csv_filename.empty?
+    # Ensure filename ends with .csv
+    csv_filename += '.csv' unless csv_filename.end_with?('.csv')
+
+    CSV.open(csv_filename, 'w') do |csv|
+      csv << headers
+      rows.each { |row| csv << row }
+    end
+    puts "\nReport exported successfully to: #{csv_filename}"
+  end
+
   [headers, rows]
 end
 
-# Added CLI module to match AlcesSacct::CLI::Commands
 module AlcesSacct
   module CLI
     module Commands
@@ -50,85 +62,107 @@ module AlcesSacct
                            desc: 'Filter by user (defaults to current user if no username specified)'
 
         def call(**opts)
-            inputs = clean_inputs(**opts)
-            jobs = Parser.new.fetch(inputs)
+          inputs = clean_inputs(**opts)
+          jobs = Parser.new.fetch(inputs)
 
-            reporter = SacctReporter.new(jobs)
+          reporter = SacctReporter.new(jobs)
 
-            user_specified      = opts[:user] && opts[:user] != 'none'
-            partition_specified = opts[:partition] && opts[:partition] != 'all'
+          user_specified      = opts[:user] && opts[:user] != 'none'
+          partition_specified = opts[:partition] && opts[:partition] != 'all'
 
-            # Table Headers matching SacctReporter#build_rows outputs
-            grouped_headers = [
-                'Jobs', 'Mean CPU', 'Mean Mem', 'Med CPU',
-                'Med Mem', 'Queue Med', 'Queue P95', 'Outcomes', 'Exit Summary'
-            ]
+          metrics_headers = [
+            'Jobs', 'Mean CPU', 'Mean Mem', 'Med CPU',
+            'Med Mem', 'Queue Med', 'Queue P95', 'Outcomes', 'Exit Summary'
+          ]
 
-            headers_with_name = ['Group'] + grouped_headers
+          csv_name = opts[:csv]
 
-            if user_specified && partition_specified
-                # 1. Single User & Single Partition
-                m = reporter.metrics
-                return puts "No jobs found for specified user and partition." unless m
+          if user_specified && partition_specified
+            # 1. Single User & Single Partition
+            m = reporter.metrics
+            return puts "No jobs found for specified user and partition." unless m
 
-                row = [[m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]]
-                title = "Summary for User (#{jobs.first&.user}) on Partition (#{jobs.first&.partition})"
-                tty_table(grouped_headers, row, title)
+            headers = ['User', 'Partition'] + metrics_headers
+            row = [[jobs.first&.user, jobs.first&.partition, m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]]
+            
+            out_file = build_csv_name(csv_name, 'user_partition')
+            render_and_export(headers, row, "Summary for User (#{jobs.first&.user}) on Partition (#{jobs.first&.partition})", csv_filename: out_file)
 
-            elsif user_specified
-                # 2. Single User -> Group by Partition + Overall Total
-                display_grouped_report(reporter, jobs, "Partition Summary for User", headers_with_name, grouped_headers, &:partition)
+          elsif user_specified
+            # 2. Single User -> Partitions + Overall Total
+            headers = ['Partition'] + metrics_headers
+            rows = build_grouped_rows(jobs, &:partition)
+            
+            # Append overall row
+            m = reporter.metrics
+            rows << ['overall', m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]] if m
 
-            elsif partition_specified
-                # 3. Single Partition -> Group by User + Overall Total
-                display_grouped_report(reporter, jobs, "User Summary for Partition", headers_with_name, grouped_headers, &:user)
+            out_file = build_csv_name(csv_name, 'user')
+            render_and_export(headers, rows, "Partition Summary for User (#{jobs.first&.user})", csv_filename: out_file)
 
-            else
-                # 4. Neither -u nor -p -> Group by User & Partition combination + Overall
-                grouped_by_both = jobs.group_by { |j| "#{j.user} / #{j.partition}" }
-                
-                # Build rows including the group name at index 0 for display
-                rows_with_names = grouped_by_both.filter_map do |group_name, job_list|
-                rep = SacctReporter.new(job_list)
-                m = rep.metrics
-                next unless m
+          elsif partition_specified
+            # 3. Single Partition -> Users + Overall Total
+            headers = ['User'] + metrics_headers
+            rows = build_grouped_rows(jobs, &:user)
 
-                [group_name, m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]
-                end
+            # Append overall row
+            m = reporter.metrics
+            rows << ['overall', m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]] if m
 
-                tty_table(headers_with_name, rows_with_names, "Breakdown by User & Partition")
+            out_file = build_csv_name(csv_name, 'partition')
+            render_and_export(headers, rows, "User Summary for Partition (#{jobs.first&.partition})", csv_filename: out_file)
 
-                # Render Overall Summary
-                m = reporter.metrics
-                if m
-                    overall_row = [[m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]]
-                    tty_table(grouped_headers, overall_row, "Overall Metrics Summary (All Jobs)")
-                end
+          else
+            # 4. Neither -u nor -p -> Hierarchical Single Table (overall/overall, overall/partition, user/overall, user/partition)
+            headers = ['User', 'Partition'] + metrics_headers
+            rows = []
+
+            # 4a. Overall / Overall
+            m_all = reporter.metrics
+            rows << ['overall', 'overall', m_all[:count], m_all[:mean_cpu], m_all[:mean_mem], m_all[:med_cpu], m_all[:med_mem], m_all[:queue_med], m_all[:queue_p95], m_all[:outcomes_str], m_all[:exit_str]] if m_all
+
+            # 4b. Overall / [Partition]
+            jobs.group_by(&:partition).each do |part_name, part_jobs|
+              m = SacctReporter.new(part_jobs).metrics
+              next unless m
+              rows << ['overall', part_name, m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]
             end
+
+            # 4c. [User] / Overall  AND  [User] / [Partition]
+            jobs.group_by(&:user).each do |user_name, user_jobs|
+              # User / Overall
+              m_user = SacctReporter.new(user_jobs).metrics
+              rows << [user_name, 'overall', m_user[:count], m_user[:mean_cpu], m_user[:mean_mem], m_user[:med_cpu], m_user[:med_mem], m_user[:queue_med], m_user[:queue_p95], m_user[:outcomes_str], m_user[:exit_str]] if m_user
+
+              # User / Partitions
+              user_jobs.group_by(&:partition).each do |part_name, up_jobs|
+                m_up = SacctReporter.new(up_jobs).metrics
+                next unless m_up
+                rows << [user_name, part_name, m_up[:count], m_up[:mean_cpu], m_up[:mean_mem], m_up[:med_cpu], m_up[:med_mem], m_up[:queue_med], m_up[:queue_p95], m_up[:outcomes_str], m_up[:exit_str]]
+              end
+            end
+
+            out_file = build_csv_name(csv_name, 'overall')
+            render_and_export(headers, rows, "Unified Workload Summary", csv_filename: out_file)
+          end
         end
 
         private
 
-        def display_grouped_report(reporter, jobs, title, headers_with_name, single_headers, &group_block)
-            grouped_jobs = jobs.group_by(&group_block)
+        def build_grouped_rows(jobs, &group_block)
+          jobs.group_by(&group_block).filter_map do |group_name, job_list|
+            m = SacctReporter.new(job_list).metrics
+            next unless m
 
-            # Include the group label in column 1 for table output
-            rows_with_names = grouped_jobs.filter_map do |group_name, job_list|
-                rep = SacctReporter.new(job_list)
-                m = rep.metrics
-                next unless m
+            [group_name, m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]
+          end
+        end
 
-                [group_name, m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]
-            end
+        def build_csv_name(base_name, metric_type)
+          return nil unless base_name && !base_name.to_s.strip.empty?
 
-            tty_table(headers_with_name, rows_with_names, title)
-
-            # Render Overall total row
-            m = reporter.metrics
-            if m
-                overall_row = [[m[:count], m[:mean_cpu], m[:mean_mem], m[:med_cpu], m[:med_mem], m[:queue_med], m[:queue_p95], m[:outcomes_str], m[:exit_str]]]
-                tty_table(single_headers, overall_row, "Overall Total")
-            end
+          clean_base = base_name.sub(/\.csv\z/i, '')
+          "#{clean_base}_#{metric_type}.csv"
         end
 
         def clean_inputs(**opts)
