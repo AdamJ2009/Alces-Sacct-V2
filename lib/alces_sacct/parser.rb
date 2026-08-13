@@ -29,12 +29,20 @@ module AlcesSacct
 
     private
 
-    def parse_jobs(output)
+    def parse_jobs(output, target_user = nil)
       jobs = {}
       parse_csv_rows(output) do |row_data, raw_id|
         process_job_row(jobs, raw_id, row_data)
       end
-      jobs.values
+
+      job_list = jobs.values
+
+      # If searching specifically for unknown users, filter down to jobs mapped as unknown
+      if target_user.to_s.downcase == 'unknown'
+        job_list.select { |j| j.user.to_s.downcase == 'unknown' }
+      else
+        job_list
+      end
     end
 
     def parse_csv_rows(output)
@@ -58,7 +66,7 @@ module AlcesSacct
     end
 
     def get_user_flag(user)
-      return '-a' if user == 'none'
+      return '-a' if user == 'none' || user.to_s.downcase == 'unknown'
 
       "-u #{user}"
     end

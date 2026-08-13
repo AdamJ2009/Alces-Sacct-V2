@@ -58,6 +58,12 @@ module AlcesSacct
           raise "Invalid #{label} date format. Expected ISO8601 (YYYY-MM-DD)."
         end
 
+        def user
+          return 'unknown' if @user.nil? || @user.to_s.strip.empty?
+
+          @user
+        end
+
         private
 
         def process(**opts)

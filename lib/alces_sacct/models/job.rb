@@ -3,7 +3,7 @@
 module AlcesSacct
   # --- Job Class ---
   class Job
-    attr_accessor :job_id, :user, :partition, :state, :submit, :start, :end_time,
+    attr_accessor :job_id, :partition, :state, :submit, :start, :end_time,
                   :elapsed, :planned, :alloc_cpus, :total_cpu, :req_mem, :max_rss, :exit_code
 
     HEADER_MAP = {
@@ -72,6 +72,18 @@ module AlcesSacct
         cpu_eff: cpu_efficiency,
         mem_eff: mem_efficiency
       )
+    end
+
+    def normalized_state
+      return 'UNKNOWN' if state.nil? || state.to_s.strip.empty?
+
+      state.to_s.upcase.sub(/\ACANCELLED.*/, 'CANCELLED')
+    end
+
+    def user
+      return 'unknown user' if @user.nil? || @user.to_s.strip.empty?
+
+      @user
     end
 
     private

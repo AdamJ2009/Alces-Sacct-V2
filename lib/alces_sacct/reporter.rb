@@ -90,12 +90,12 @@ module AlcesSacct
     end
 
     def format_outcomes(count)
-      state_counts = @jobs.group_by(&:state)
+      # Use :normalized_state instead of :state
+      state_counts = @jobs.group_by(&:normalized_state)
       outcomes_pct = state_counts.transform_values do |state_jobs|
         ((state_jobs.size / count) * 100).round(2)
       end
 
-      # Joins each outcome state on a new line
       outcomes_pct.map { |k, v| "#{k}: #{v}%" }.join("\n")
     end
 
