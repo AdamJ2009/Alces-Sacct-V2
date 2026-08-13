@@ -15,9 +15,11 @@ Y2K38_LIMIT = Date.new(2038, 1, 19)
 
 module AlcesSacct
   module CLI
+    # Commands callable in executable
     module Commands
       extend Dry::CLI::Registry
 
+      # Command that generates the report for overall, partition and user
       class Report < Dry::CLI::Command
         desc 'Report based on flags sent to the cli'
 
@@ -27,7 +29,8 @@ module AlcesSacct
         option :start,        aliases: ['-S'], type: :string,  desc: 'Starttime in ISO format'
         option :state,        aliases: ['-s'], type: :string,  desc: 'States as comma seperated list'
         option :user,         aliases: ['-u'], type: :boolean, desc: 'Filter by user (defaults to current user)'
-        option :unknown_user, aliases: ['-U'], type: :boolean, desc: 'Filter strictly for jobs with no user ID/association'
+        option :unknown_user, aliases: ['-U'], type: :boolean,
+                              desc: 'Filter strictly for jobs with no user ID/association'
 
         def call(**opts)
           user_specified, partition_specified, ctx = process(**opts)
@@ -71,7 +74,7 @@ module AlcesSacct
           start_time, end_time = get_time(opts[:start], opts[:end])
           partition = opts[:partition] && !opts[:partition].empty? ? opts[:partition] : 'all'
           state = opts[:state] && !opts[:state].empty? ? opts[:state] : 'all'
-          
+
           target_user = resolve_user_target(opts)
           [start_time, end_time, target_user, partition, state]
         end

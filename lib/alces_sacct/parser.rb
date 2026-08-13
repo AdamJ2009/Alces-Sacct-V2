@@ -4,6 +4,7 @@ require 'csv'
 require_relative 'models/job'
 
 module AlcesSacct
+  # Runs the sacct command and adds parser
   class Parser
     HEADERS = %i[
       JobID User Partition State Submit Start End
@@ -22,8 +23,6 @@ module AlcesSacct
       ].join(',')
 
       cmd = "sacct #{user} -S #{flag[0]} -E #{flag[1]} #{partition} #{states} -P -n -o #{fields}"
-
-      puts cmd
       parse_jobs(`#{cmd}`, raw_user)
     end
 
@@ -66,7 +65,7 @@ module AlcesSacct
     end
 
     def get_user_flag(user)
-      return '-a' if user == 'none' || user == 'unknown_only'
+      return '-a' if %w[none unknown_only].include?(user)
 
       "-u #{user}"
     end
