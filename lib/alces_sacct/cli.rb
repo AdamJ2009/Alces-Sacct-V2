@@ -17,12 +17,18 @@ def get_time(start, end_date)
   [start_time, end_time]
 end
 
-# Example definition of parse_date! if it's missing:
 def parse_date!(label, val)
   Date.iso8601(val)
 rescue ArgumentError
   raise "Invalid #{label} date format. Expected ISO8601 (YYYY-MM-DD)."
 end
+
+def tty_table(headers,rows,title)
+    puts title
+    table = TTY::Table.new(headers, rows)
+    puts table.render(:unicode)
+    [headers, rows]
+  end
 
 # Added CLI module to match AlcesSacct::CLI::Commands
 module AlcesSacct
@@ -42,10 +48,18 @@ module AlcesSacct
                            desc: 'Filter by user (defaults to current user if no username specified)'
 
         def call(**opts)
-          inputs = clean_inputs(**opts)
-          output = Parser.new.fetch(inputs)
-          pp output
-          #Reporter.new(output)
+            inputs = clean_inputs(**opts)
+            output = Parser.new.fetch(inputs)
+            pp output.map(&:to_h)
+            puts "\n=== Overall Metrics Summary ==="
+            pp reporter.metrics
+
+            # 2. Grouped table rows (e.g., grouped by user or partition)
+            grouped_jobs = jobs.group_by(&:user) # or jobs.group_by(&:partition)
+            rows = reporter.build_rows(grouped_jobs)
+            
+            puts "\n=== Grouped Table Rows ==="
+            pp rows
         end
 
         private

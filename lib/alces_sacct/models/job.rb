@@ -104,6 +104,6 @@ class Job
     when 'G', 'GB' then num * 1024.0
     when 'T', 'TB' then num * 1024.0 * 1024.0
     else num
-    ends
+    end
   end
 end
