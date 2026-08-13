@@ -1,3 +1,6 @@
+require 'csv'
+require_relative 'models/job'
+
 class Parser
 
     HEADERS = %i[
