@@ -11,6 +11,7 @@ class Parser
         states = get_states(flag[4])
         cmd = "sacct " + user + " -S #{flag[0]} -E #{flag[1]} " + partition + " " + states + " -P -n \
   -o JobID,User,Partition,State,Submit,Start,End,Elapsed,Planned,AllocCPUs,TotalCPU,ReqMem,MaxRSS,ExitCode"
+        puts cmd
         command_value = `#{cmd}`
     end
     private
