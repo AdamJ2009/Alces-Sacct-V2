@@ -72,7 +72,7 @@ module AlcesSacct
     def get_states(state)
       return '' if state == 'all'
 
-      "-r #{state}"
+      "-s #{state}"
     end
   end
 end

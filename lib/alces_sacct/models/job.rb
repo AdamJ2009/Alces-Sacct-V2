@@ -76,7 +76,7 @@ module AlcesSacct
 
     private
 
-    def time_str_to_seconds(time_str)
+    def time_to_seconds(time_str)
       return 0.0 if time_str.to_s.strip.empty?
 
       match = time_str.to_s.strip.match(/(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)/)
