@@ -55,7 +55,6 @@ module AlcesSacct
         attributes = row_data.transform_keys { |k| Job::HEADER_MAP[k] }
         jobs[raw_id] = Job.new(attributes)
       end
-      endid.values
     end
 
     def get_user_flag(user)
