@@ -4,17 +4,13 @@ Ruby tool to help assist in metric calculation for SLURM sacct
 
 ## Installation
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add alces-sacct
+Install the gem and add to the application by cloning this repository
+```
+git clone https://github.com/AdamJ2009/Alces-Sacct-V2.git
+cd Alces-Sacct-V2
+bundle exec rake install.
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install alces-sacct
-```
 
 ## Usage
 
