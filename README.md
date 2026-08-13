@@ -21,7 +21,7 @@ gem install alces-sacct
 ```
 sacct-reporter report [options]
 ```
-###Options
+### Options
 
 ```
   --csv=VALUE, -c VALUE             # Output CSV filename
