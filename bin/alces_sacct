@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
-require "bundler/setup"
-require "dry/cli"
-require_relative "../lib/alces_sacct/cli"
+require 'bundler/setup'
+require 'dry/cli'
+require_relative '../lib/alces_sacct/cli'
 
 # Now matches the module structure in lib
 Dry::CLI.new(AlcesSacct::CLI::Commands).call
