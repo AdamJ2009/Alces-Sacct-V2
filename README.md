@@ -1,8 +1,6 @@
 # AlcesSacct
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/alces_sacct`. To experiment with that code, run `bin/console` for an interactive prompt.
+Ruby tool to help assist in metric calculation for SLURM sacct
 
 ## Installation
 
@@ -11,18 +9,32 @@ TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_O
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add alces-sacct
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install alces-sacct
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+```
+sacct-reporter report [options]
+```
+###Options
+
+```
+  --csv=VALUE, -c VALUE             # Output CSV filename
+  --end=VALUE, -E VALUE             # Endtime in ISO format
+  --partition=VALUE, -p VALUE       # Filter by partition
+  --start=VALUE, -S VALUE           # Starttime in ISO format
+  --state=VALUE, -s VALUE           # States as comma seperated list
+  --[no-]user, -u                   # Filter by user (defaults to current user)
+  --[no-]unknown-user, -U           # Filter strictly for jobs with no user ID/association
+  --help, -h                        # Print this help
+```
 
 ## Development
 
