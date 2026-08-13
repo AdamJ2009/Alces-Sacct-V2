@@ -13,24 +13,21 @@ require_relative 'renderer'
 EPOCH_START = Date.new(1970, 1, 1)
 Y2K38_LIMIT = Date.new(2038, 1, 19)
 
-# Main module for running program
 module AlcesSacct
   module CLI
-    # Commands that exist for AlcesSacct
     module Commands
       extend Dry::CLI::Registry
 
-      # Called when command is given to render metrics to tty table and csv
       class Report < Dry::CLI::Command
         desc 'Report based on flags sent to the cli'
 
-        option :csv,       aliases: ['-c'], type: :string, desc: 'Output CSV filename'
-        option :end,       aliases: ['-E'], type: :string, desc: 'Endtime in ISO format'
-        option :partition, aliases: ['-p'], type: :string, desc: 'Filter by partition'
-        option :start,     aliases: ['-S'], type: :string, desc: 'Starttime in ISO format'
-        option :state,     aliases: ['-s'], type: :string, desc: 'States as comma seperated list'
-        option :user,      aliases: ['-u'], type: :boolean,
-                           desc: 'Filter by user (defaults to current user if no username specified)'
+        option :csv,          aliases: ['-c'], type: :string,  desc: 'Output CSV filename'
+        option :end,          aliases: ['-E'], type: :string,  desc: 'Endtime in ISO format'
+        option :partition,    aliases: ['-p'], type: :string,  desc: 'Filter by partition'
+        option :start,        aliases: ['-S'], type: :string,  desc: 'Starttime in ISO format'
+        option :state,        aliases: ['-s'], type: :string,  desc: 'States as comma seperated list'
+        option :user,         aliases: ['-u'], type: :boolean, desc: 'Filter by user (defaults to current user)'
+        option :unknown_user, aliases: ['-U'], type: :boolean, desc: 'Filter strictly for jobs with no user ID/association'
 
         def call(**opts)
           user_specified, partition_specified, ctx = process(**opts)
@@ -57,7 +54,6 @@ module AlcesSacct
         rescue ArgumentError
           raise "Invalid #{label} date format. Expected ISO8601 (YYYY-MM-DD)."
         end
-        
 
         private
 
@@ -66,7 +62,7 @@ module AlcesSacct
           csv_name = Renderer.csv_check!(opts[:csv])
           ctx = { jobs: jobs, reporter: SacctReporter.new(jobs), csv_name: csv_name }
 
-          user_specified      = opts[:user] && opts[:user] != 'none'
+          user_specified      = opts[:user] || opts[:unknown_user]
           partition_specified = opts[:partition] && opts[:partition] != 'all'
           [user_specified, partition_specified, ctx]
         end
@@ -75,8 +71,16 @@ module AlcesSacct
           start_time, end_time = get_time(opts[:start], opts[:end])
           partition = opts[:partition] && !opts[:partition].empty? ? opts[:partition] : 'all'
           state = opts[:state] && !opts[:state].empty? ? opts[:state] : 'all'
-          target_user = parse_user_flag(opts[:user])
+          
+          target_user = resolve_user_target(opts)
           [start_time, end_time, target_user, partition, state]
+        end
+
+        def resolve_user_target(opts)
+          return 'unknown_only' if opts[:unknown_user]
+          return parse_user_flag(opts[:user]) if opts[:user]
+
+          'none'
         end
 
         def parse_user_flag(user_flag)

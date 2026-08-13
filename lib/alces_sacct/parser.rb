@@ -4,7 +4,6 @@ require 'csv'
 require_relative 'models/job'
 
 module AlcesSacct
-  # --- Parser Class ---
   class Parser
     HEADERS = %i[
       JobID User Partition State Submit Start End
@@ -13,7 +12,7 @@ module AlcesSacct
 
     def fetch(flag)
       raw_user = flag[2]
-      user = get_user_flag(raw_user) 
+      user = get_user_flag(raw_user)
       partition = get_partition_flag(flag[3])
       states = get_states(flag[4])
 
@@ -25,12 +24,12 @@ module AlcesSacct
       cmd = "sacct #{user} -S #{flag[0]} -E #{flag[1]} #{partition} #{states} -P -n -o #{fields}"
 
       puts cmd
-      parse_jobs(`#{cmd}`)
+      parse_jobs(`#{cmd}`, raw_user)
     end
 
     private
 
-    def parse_jobs(output, target_user = nil)
+    def parse_jobs(output, target_user)
       jobs = {}
       parse_csv_rows(output) do |row_data, raw_id|
         process_job_row(jobs, raw_id, row_data)
@@ -38,9 +37,9 @@ module AlcesSacct
 
       job_list = jobs.values
 
-      # If searching specifically for unknown users, filter down to jobs mapped as unknown
-      if target_user.to_s.downcase == 'unknown'
-        job_list.select { |j| j.user.to_s.downcase == 'unknown' }
+      # Filter strictly for unknown user records if -U flag was set
+      if target_user == 'unknown_only'
+        job_list.select { |j| j.user == 'unknown user' }
       else
         job_list
       end
@@ -67,7 +66,7 @@ module AlcesSacct
     end
 
     def get_user_flag(user)
-      return '-a' if user == 'none' || user.to_s.downcase == 'unknown'
+      return '-a' if user == 'none' || user == 'unknown_only'
 
       "-u #{user}"
     end
