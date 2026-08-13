@@ -13,6 +13,7 @@ class Parser
   -o JobID,User,Partition,State,Submit,Start,End,Elapsed,Planned,AllocCPUs,TotalCPU,ReqMem,MaxRSS,ExitCode"
         puts cmd
         command_value = `#{cmd}`
+        parse_jobs(command_value)
     end
     private
 

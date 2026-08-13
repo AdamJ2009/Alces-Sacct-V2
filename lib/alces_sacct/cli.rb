@@ -44,6 +44,7 @@ module AlcesSacct
         def call(**opts)
           inputs = clean_inputs(**opts)
           output = Parser.new.fetch(inputs)
+          pp output
           #Reporter.new(output)
         end
 
