@@ -28,7 +28,7 @@ end
 def tty_table(headers, rows, title)
   puts "\n#{title}"
   table = TTY::Table.new(headers, rows)
-  puts table.render(:unicode, padding: [0, 1])
+  puts table.render(:unicode, multiline: true) { |r| r.border.separator = :each_row }
   [headers, rows]
 end
 
