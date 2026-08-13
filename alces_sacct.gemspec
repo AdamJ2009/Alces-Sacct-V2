@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email       = ['adamdj2009@gmail.com']
 
   spec.summary     = 'CLI tool for parsing and reporting Slurm sacct job accounting data.'
-  spec.description = 'AlcesSacct aggregates and formats Slurm sacct output into detailed user, partition, and job reports.'
+  spec.description = 'AlcesSacct aggregates and formats Slurm sacct output into detailed user and partition reports.'
   spec.homepage    = 'https://github.com/AdamJ2009/alces_sacct'
   spec.required_ruby_version = '>= 3.2.0'
 

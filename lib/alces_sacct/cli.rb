@@ -9,6 +9,7 @@ require 'time'
 require_relative 'parser'
 require_relative 'reporter'
 require_relative 'renderer'
+require_relative 'version'
 
 EPOCH_START = Date.new(1970, 1, 1)
 Y2K38_LIMIT = Date.new(2038, 1, 19)
@@ -106,7 +107,17 @@ module AlcesSacct
         end
       end
 
+      # Puts version
+      class Version < Dry::CLI::Command
+        desc 'Print the version'
+
+        def call(*)
+          puts "AlcesSacct version #{AlcesSacct::VERSION}"
+        end
+      end
+
       register 'report', Report
+      register 'version', Version, aliases: ['-v', '--version']
     end
   end
 end
