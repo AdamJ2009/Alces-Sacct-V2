@@ -12,7 +12,8 @@ module AlcesSacct
     ].freeze
 
     def fetch(flag)
-      user = get_user_flag(flag[2])
+      raw_user = flag[2]
+      user = get_user_flag(raw_user) 
       partition = get_partition_flag(flag[3])
       states = get_states(flag[4])
 

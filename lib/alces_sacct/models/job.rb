@@ -6,6 +6,8 @@ module AlcesSacct
     attr_accessor :job_id, :partition, :state, :submit, :start, :end_time,
                   :elapsed, :planned, :alloc_cpus, :total_cpu, :req_mem, :max_rss, :exit_code
 
+    attr_writer :user
+
     HEADER_MAP = {
       JobID: :job_id,
       User: :user,
