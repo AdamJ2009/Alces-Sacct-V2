@@ -61,6 +61,17 @@ module AlcesSacct
         render_and_export(headers, rows, 'Unified Workload Summary', csv_filename: ctx[:csv_name])
       end
 
+      def csv_check!(filename)
+        return nil if filename.nil?
+
+        unless filename =~ /\.csv$/i
+          puts "Error: Invalid CSV filename '#{filename}'. Must end with .csv"
+          exit 1
+        end
+
+        filename
+      end
+
       private
 
       def append_user_rows(rows, jobs, show_overall)
@@ -91,16 +102,6 @@ module AlcesSacct
         export_csv(headers, rows, csv_filename)
       end
 
-      def csv_check!(filename)
-        return nil if filename.nil?
-
-        unless filename =~ /\.csv$/i
-          puts "Error: Invalid CSV filename '#{filename}'. Must end with .csv"
-          exit 1
-        end
-
-        filename
-      end
 
       def format_row(metrics)
         return nil unless metrics
