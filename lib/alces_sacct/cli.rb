@@ -49,9 +49,6 @@ module AlcesSacct
           else
             Renderer.render_unified_summary(ctx, opts[:overall])
           end
-        rescue Errno::ENOENT => e
-          warn "Error: Unable to locate binary - #{e.message}"
-          exit 1
         end
 
         def get_time(start, end_date, limit)

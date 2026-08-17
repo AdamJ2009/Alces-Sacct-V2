@@ -2,5 +2,5 @@
 
 # Gives version number unless defined elsewhere
 module AlcesSacct
-  VERSION = '1.0.0' unless defined?(AlcesSacct::VERSION)
+  VERSION = '1.1.0' unless defined?(AlcesSacct::VERSION)
 end
