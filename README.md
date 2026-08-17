@@ -22,12 +22,15 @@ sacct-reporter report [options]
 ```
   --csv=VALUE, -c VALUE             # Output CSV filename
   --end=VALUE, -E VALUE             # Endtime in ISO format
+  --limit-time=VALUE, -L VALUE      # Limit time of search in days, default: 90
+  --[no-]overall, -o                # Show overall
   --partition=VALUE, -p VALUE       # Filter by partition
   --start=VALUE, -S VALUE           # Starttime in ISO format
   --state=VALUE, -s VALUE           # States as comma seperated list
   --[no-]user, -u                   # Filter by user (defaults to current user)
   --[no-]unknown-user, -U           # Filter strictly for jobs with no user ID/association
   --help, -h                        # Print this help
+
 ```
 
 ## Contributing
