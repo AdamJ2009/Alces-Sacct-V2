@@ -52,6 +52,7 @@ module AlcesSacct
         end
 
         def get_time(start, end_date, limit)
+          limit = limit.to_i
           start_time = start ? parse_date!('start', start) : NO_FLAG_7_DAYS_AGO
           end_time   = end_date ? parse_date!('end', end_date) : NO_FLAG_TODAY
           start_time = start_time > EPOCH_START ? start_time : EPOCH_START
