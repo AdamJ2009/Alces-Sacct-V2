@@ -25,33 +25,37 @@ module AlcesSacct
         render_and_export(headers, [[user, partition, *row]], title, csv_filename: ctx[:csv_name])
       end
 
-      def render_single_user(ctx)
+      def render_single_user(ctx, show_overall = false)
         headers = ['Partition'] + METRICS_HEADERS
         rows = build_grouped_rows(ctx[:jobs], &:partition)
 
-        overall = format_row(ctx[:reporter].metrics)
-        rows << ['overall', *overall] if overall
+        if show_overall
+          overall_row = format_row(ctx[:reporter].metrics)
+          rows << ['overall', *overall_row] if overall_row
+        end
 
         title = "Partition Summary for User (#{ctx[:jobs].first&.user})"
         render_and_export(headers, rows, title, csv_filename: ctx[:csv_name])
       end
 
-      def render_single_partition(ctx)
+      def render_single_partition(ctx, show_overall = false)
         headers = ['User'] + METRICS_HEADERS
         rows = build_grouped_rows(ctx[:jobs], &:user)
 
-        overall = format_row(ctx[:reporter].metrics)
-        rows << ['overall', *overall] if overall
+        if show_overall
+          overall_row = format_row(ctx[:reporter].metrics)
+          rows << ['overall', *overall_row] if overall_row
+        end
 
         title = "User Summary for Partition (#{ctx[:jobs].first&.partition})"
         render_and_export(headers, rows, title, csv_filename: ctx[:csv_name])
       end
 
-      def render_unified_summary(ctx)
+      def render_unified_summary(ctx, show_overall = false)
         headers = %w[User Partition] + METRICS_HEADERS
         rows = []
 
-        append_overall_rows(rows, ctx[:reporter], ctx[:jobs])
+        append_overall_rows(rows, ctx[:reporter], ctx[:jobs]) if show_overall
         append_user_rows(rows, ctx[:jobs])
 
         render_and_export(headers, rows, 'Unified Workload Summary', csv_filename: ctx[:csv_name])

@@ -22,7 +22,7 @@ module AlcesSacct
         Elapsed Planned AllocCPUs TotalCPU ReqMem MaxRSS ExitCode
       ].join(',')
 
-      cmd = "sacct -X #{user} -S #{flag[0]} -E #{flag[1]} #{partition} #{states} -P -n -o #{fields}"
+      cmd = "sacct #{user} -S #{flag[0]} -E #{flag[1]} #{partition} #{states} -P -n -o #{fields}"
       parse_jobs(`#{cmd}`, raw_user)
     end
 
