@@ -54,26 +54,30 @@ module AlcesSacct
       def render_unified_summary(ctx, show_overall)
         headers = %w[User Partition] + METRICS_HEADERS
         rows = []
-        
+
         append_overall_rows(rows, ctx[:reporter], ctx[:jobs]) if show_overall
         append_user_rows(rows, ctx[:jobs], show_overall) # Pass show_overall down
 
         render_and_export(headers, rows, 'Unified Workload Summary', csv_filename: ctx[:csv_name])
       end
 
-      private 
+      private
 
       def append_user_rows(rows, jobs, show_overall)
         jobs.group_by(&:user).each do |user_name, user_jobs|
-          if show_overall
-            u_row = format_row(SacctReporter.new(user_jobs).metrics)
-            rows << [user_name, 'overall', *u_row] if u_row
-          end
+          append_single_user_rows(rows, user_name, user_jobs, show_overall)
+        end
+      end
 
-          user_jobs.group_by(&:partition).each do |part_name, up_jobs|
-            up_row = format_row(SacctReporter.new(up_jobs).metrics)
-            rows << [user_name, part_name, *up_row] if up_row
-          end
+      def append_single_user_rows(rows, user_name, user_jobs, show_overall)
+        if show_overall
+          u_row = format_row(SacctReporter.new(user_jobs).metrics)
+          rows << [user_name, 'overall', *u_row] if u_row
+        end
+
+        user_jobs.group_by(&:partition).each do |part_name, up_jobs|
+          up_row = format_row(SacctReporter.new(up_jobs).metrics)
+          rows << [user_name, part_name, *up_row] if up_row
         end
       end
 
@@ -106,18 +110,6 @@ module AlcesSacct
           metrics[:med_cpu], metrics[:med_mem], metrics[:queue_med],
           metrics[:queue_p95], metrics[:outcomes_str], metrics[:exit_str]
         ]
-      end
-
-      def append_user_rows(rows, jobs)
-        jobs.group_by(&:user).each do |user_name, user_jobs|
-          u_row = format_row(SacctReporter.new(user_jobs).metrics)
-          rows << [user_name, 'overall', *u_row] if u_row
-
-          user_jobs.group_by(&:partition).each do |part_name, up_jobs|
-            up_row = format_row(SacctReporter.new(up_jobs).metrics)
-            rows << [user_name, part_name, *up_row] if up_row
-          end
-        end
       end
 
       def build_grouped_rows(jobs, &group_block)
