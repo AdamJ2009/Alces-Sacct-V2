@@ -74,6 +74,16 @@ module AlcesSacct
 
       private
 
+      def append_overall_rows(rows, reporter, jobs)
+        overall = format_row(reporter.metrics)
+        rows << ['overall', 'overall', *overall] if overall
+
+        jobs.group_by(&:partition).each do |part_name, part_jobs|
+          row = format_row(SacctReporter.new(part_jobs).metrics)
+          rows << ['overall', part_name, *row] if row
+        end
+      end
+
       def append_user_rows(rows, jobs, show_overall)
         jobs.group_by(&:user).each do |user_name, user_jobs|
           append_single_user_rows(rows, user_name, user_jobs, show_overall)
@@ -101,7 +111,6 @@ module AlcesSacct
 
         export_csv(headers, rows, csv_filename)
       end
-
 
       def format_row(metrics)
         return nil unless metrics
