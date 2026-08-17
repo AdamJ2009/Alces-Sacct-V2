@@ -57,19 +57,11 @@ module AlcesSacct
         def get_time(start, end_date, limit)
           start_time = start ? parse_date!('start', start) : NO_FLAG_7_DAYS_AGO
           end_time   = end_date ? parse_date!('end', end_date) : NO_FLAG_TODAY
-
-          # Clamp boundaries
-          start_time = [start_time, EPOCH_START].max
-          end_time   = [end_time, Y2K38_LIMIT].min
-
-          # Ensure date range respects limit (in days)
-          if (end_time - start_time).to_i > limit
-            start_time = end_time - limit
-          end
-
-          puts "Start time: #{start_time}"
-          puts "End time: #{end_time}"
-
+          start_time = start_time > EPOCH_START ? start_time : EPOCH_START
+          end_time = end_time < Y2K38_LIMIT ? end_time : Y2K38_LIMIT
+          start_time = end_time - start_time < limit ? start_time : end_time - limit
+          puts start_time
+          puts end_time
           [start_time, end_time]
         end
 
