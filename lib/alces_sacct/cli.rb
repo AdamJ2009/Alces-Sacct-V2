@@ -55,7 +55,7 @@ module AlcesSacct
           start_time = start ? parse_date!('start', start) : NO_FLAG_7_DAYS_AGO
           end_time   = end_date ? parse_date!('end', end_date) : NO_FLAG_TODAY
           start_time = start_time > EPOCH_START ? start_time : EPOCH_START
-          end_time = end_time < Y2K38_LIMIT ? start_time : Y2K38_LIMIT
+          end_time = end_time < Y2K38_LIMIT ? end_time : Y2K38_LIMIT
           start_time = end_time - start_time < MAX_RANGE_LIMIT ? start_time : end_time - MAX_RANGE_LIMIT
           puts start_time
           puts end_time
