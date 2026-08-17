@@ -25,7 +25,7 @@ module AlcesSacct
         render_and_export(headers, [[user, partition, *row]], title, csv_filename: ctx[:csv_name])
       end
 
-      def render_single_user(ctx, show_overall: false)
+      def render_single_user(ctx, show_overall)
         headers = ['Partition'] + METRICS_HEADERS
         rows = build_grouped_rows(ctx[:jobs], &:partition)
 
@@ -38,7 +38,7 @@ module AlcesSacct
         render_and_export(headers, rows, title, csv_filename: ctx[:csv_name])
       end
 
-      def render_single_partition(ctx, show_overall: false)
+      def render_single_partition(ctx, show_overall)
         headers = ['User'] + METRICS_HEADERS
         rows = build_grouped_rows(ctx[:jobs], &:user)
 
@@ -51,7 +51,7 @@ module AlcesSacct
         render_and_export(headers, rows, title, csv_filename: ctx[:csv_name])
       end
 
-      def render_unified_summary(ctx, show_overall: false)
+      def render_unified_summary(ctx, show_overall)
         headers = %w[User Partition] + METRICS_HEADERS
         rows = []
 
